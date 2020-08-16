@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from resources.lib import kodilogging
+from resources.lib.utils import kodilogging
 from resources.lib import plugin
 
 import logging
