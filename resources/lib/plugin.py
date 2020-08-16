@@ -7,7 +7,7 @@ from resources.lib.utils import kodiutils
 from resources.lib.utils import kodilogging
 from resources.lib.gogoanime1.gogoanime1 import get_mp4_for_conan
 from xbmcgui import ListItem
-from xbmcplugin import addDirectoryItem, endOfDirectory
+from xbmcplugin import addDirectoryItem, endOfDirectory, setResolvedUrl
 
 
 ADDON = xbmcaddon.Addon()
@@ -38,17 +38,34 @@ def show_conan():
             show_conan_episodes, i + 1), list_item, is_folder)
     endOfDirectory(plugin.handle)
 
-@plugin.route('/conan/<episode>')
-def show_conan_episodes(episode):
-    for i in range(int(episode), int(episode) + 10):
-        list_item = ListItem(label=("Detective Conan - " + str(i)), offscreen=True)
+@plugin.route('/conan/<episodes>')
+def show_conan_episodes(episodes):
+    for i in range(int(episodes), int(episodes) + 10):
+        list_item = ListItem(
+            label=("Detective Conan - " + str(i)), 
+            offscreen=True)
         # list_item.setLabel2(movie.expiration_date)
         # list_item.setInfo('video', movie.getMovieInfo())
         # list_item.setArt(movie.getMovieArt())
-        list_item.setProperty('IsPlayable', 'True')
-        url = get_mp4_for_conan(i)
-        is_folder = False
-        addDirectoryItem(plugin.handle, url, list_item, is_folder)
+        list_item.setProperty('IsPlayable', 'False')
+        # url = get_mp4_for_conan(i)
+        is_folder = True
+        list_item
+        addDirectoryItem(
+            plugin.handle, 
+            plugin.url_for(play_conan, str(i)), 
+            list_item, is_folder)
+    endOfDirectory(plugin.handle)
+
+@plugin.route('/conan/play/<episode>')
+def play_conan(episode):
+    item = ListItem(label=("Play episode"))
+    item.setProperty('IsPlayable', 'True')
+    is_folder = False
+    addDirectoryItem(
+            plugin.handle, 
+            get_mp4_for_conan(episode),
+            item, is_folder)
     endOfDirectory(plugin.handle)
 
 def run():
