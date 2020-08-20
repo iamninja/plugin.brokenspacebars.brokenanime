@@ -49,7 +49,7 @@ def get_mp4(slug, episode):
     urls = generate_random_urls(url)
 
     # return urls
-    return match[0]
+    return urls
 
 def generate_random_urls(url):
     end_part = url.split("anime1.com/")[1]
@@ -62,7 +62,8 @@ def get_latest_episode_number(slug):
     resp = requests.get(baseURL + str(slug))
     resp.encoding = resp.apparent_encoding
     soup = BeautifulSoup(resp.text, 'html.parser')
-    latest_episode = soup.find("div", class_="epCheck").find_next('a').get('href').split("-")[-1]
+    # latest_episode = soup.find("div", class_="epCheck").find_next('a').get('href').split("-")[-1]
+    latest_episode = soup.find_all('a', text=re.compile("Episode"))[1].get('href').split('-')[-1]
     print("Latest episode found for " + str(slug) + " is " + str(latest_episode))
     return latest_episode
 

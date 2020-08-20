@@ -27,6 +27,8 @@ def index():
     addDirectoryItem(plugin.handle, plugin.url_for(
         show_conan), ListItem("Detective Conan"), True)
     addDirectoryItem(plugin.handle, plugin.url_for(
+        show_grouped_episodes, id = 210, slug = "detective-conan"), ListItem("Detective Conan - Kitsu"), True)
+    addDirectoryItem(plugin.handle, plugin.url_for(
         trending_kitsu), ListItem("Trending Anime"), True)
     addDirectoryItem(plugin.handle, plugin.url_for(
         popular_kitsu), ListItem("Popular Anime"), True)
@@ -105,7 +107,7 @@ def get_sources(slug, number):
     # Pass the item to the Kodi player.
     # setResolvedUrl(plugin.handle, True, listitem=play_item)
     print(urls_gogoanime)
-    Player().play(urls_gogoanime[url_index] + "|User-Agent=Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/84.0.4147.125 Safari/537.36&Referer=" + urls_gogoanime[url_index], play_item)
+    Player().play(urls_gogoanime[url_index], play_item)
 
 @plugin.route('/conan')
 def show_conan():
@@ -144,6 +146,9 @@ def show_conan_episodes(episodes):
 def play_conan(episode):
     item = ListItem(label=("Play episode"))
     item.setProperty('IsPlayable', 'True')
+    item.setInfo('video',{
+        'mediatype': "tvshow"
+    })
     is_folder = False
     addDirectoryItem(
             plugin.handle, 

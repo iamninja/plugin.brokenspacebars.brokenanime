@@ -52,7 +52,7 @@ class Anime:
             'status': self.status,
             'mediatype': "tvshow",
             'rating': self.averageRating,
-            'trailer': "https://www.youtube.com/watch?v=" + self.youtubeVideoId
+            'trailer': "https://www.youtube.com/watch?v=" + str(self.youtubeVideoId)
         }
 
     def getAnimeArt(self):
