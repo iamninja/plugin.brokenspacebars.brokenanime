@@ -1,5 +1,44 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
-<settings>
-    <setting id="debug" type="bool" label="32001" default="false"/>
+<settings version="1">
+	<section id="plugin.brokenspacebars.brokenanime">
+		<category id="debug" label="32001" help="">
+			<group id="1" label="32001">
+				<setting id="is_debug" type="boolean" label="32001" help="">
+                    <level>0</level>
+                    <default>false</default>
+					<control type="toggle" />
+				</setting>
+			</group>
+		</category>
+
+        <category id="kitsu" label="32101" help="">
+			<group id="1" label="32102">
+				<setting id="username" type="string" label="32111" help="">
+                    <level>0</level>
+                    <constraints>
+                        <allowempty>true</allowempty>
+                    </constraints>
+                    <default></default>
+					<control type="edit" format="string">
+                        <heading>32111</heading>
+                    </control>
+				</setting>
+
+                <setting id="password" type="string" label="32121" help="">
+                    <level>0</level>
+                    <constraints>
+                        <allowempty>true</allowempty>
+                    </constraints>
+                    <default></default>
+					<control type="edit" format="string">
+                        <heading>32121</heading>
+                        <hidden>true</hidden>
+                    </control>
+				</setting>
+			</group>
+		</category>
+	</section>
+
+    <!-- <setting id="debug" type="bool" label="32001" default="false"/> -->
 </settings>
 

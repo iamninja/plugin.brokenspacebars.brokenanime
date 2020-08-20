@@ -25,3 +25,19 @@ msgstr ""
 msgctxt "#32001"
 msgid "Debug"
 msgstr ""
+
+msgctxt "#32101"
+msgid "Kitsu"
+msgstr ""
+
+msgctxt "#32102"
+msgid "Credentials"
+msgstr ""
+
+msgctxt "#32111"
+msgid "Username"
+msgstr ""
+
+msgctxt "#32121"
+msgid "Password"
+msgstr ""
