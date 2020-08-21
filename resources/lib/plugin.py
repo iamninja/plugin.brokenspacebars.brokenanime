@@ -101,13 +101,20 @@ def get_sources(slug, number):
     urls_gogoanime = get_mp4(slug, number)
     progress.close()
     dialog = Dialog()
-    url_index = dialog.select('Choose a source', ['GoGoAnime1 #1', 'GoGoAnime1 #2', 'GoGoAnime1 #3', 'GoGoAnime1 #4'])
-    play_item = ListItem(path=urls_gogoanime[url_index])
-    play_item.setProperty('mimetype', 'video/mp4')
+    if urls_gogoanime != None:
+        url_index = dialog.select('Choose a source', ['GoGoAnime1 #1'])
+        play_item = ListItem(path=urls_gogoanime[url_index])
+        play_item.setProperty('mimetype', 'video/mp4')
+        Player().play(urls_gogoanime[url_index], play_item)
+    else:
+        url_index = dialog.select('Choose a source', ['Couldn\'t find sources'])
+        play_item = ListItem(path="")
+        play_item.setProperty('mimetype', 'video/mp4')
+        Player().play("", play_item)
     # Pass the item to the Kodi player.
     # setResolvedUrl(plugin.handle, True, listitem=play_item)
-    print(urls_gogoanime)
-    Player().play(urls_gogoanime[url_index], play_item)
+    # print(urls_gogoanime)
+    # Player().play(urls_gogoanime[url_index], play_item)
 
 @plugin.route('/conan')
 def show_conan():

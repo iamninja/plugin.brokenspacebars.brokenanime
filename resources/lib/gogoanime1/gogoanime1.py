@@ -33,9 +33,13 @@ def get_mp4_for_conan(episode):
     return match[0]
 
 def get_mp4(slug, episode):
+    print("----------get_mp4()----------")
+    print(baseURL + str(slug) + "/episode/episode-" + str(episode))
     resp = requests.get(baseURL + str(slug) + "/episode/episode-" + str(episode))
     resp.encoding = resp.apparent_encoding
     soup = BeautifulSoup(resp.text, 'html.parser')
+    if not soup.find('div', class_='vmn-player'):
+        return None
     vid = soup.find_all("script")[10].prettify()
     match = re.findall(r'\"(.+?)\"',vid)
     # print(vid)
@@ -45,11 +49,11 @@ def get_mp4(slug, episode):
         print("Not Found")
         return
     # Add random
-    url = match[0].replace('https', 'http')
-    urls = generate_random_urls(url)
+    # url = match[0].replace('https', 'http')
+    # urls = generate_random_urls(url)
 
     # return urls
-    return urls
+    return [match[0]]
 
 def generate_random_urls(url):
     end_part = url.split("anime1.com/")[1]
