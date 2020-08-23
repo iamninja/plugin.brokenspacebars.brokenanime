@@ -4,6 +4,7 @@ import requests
 import json
 import pickle
 from xbmcaddon import Addon
+from resources.lib.utils.wrappers import Progress
 from resources.lib.kitsu.models.anime import Anime
 from resources.lib.kitsu.models.episode import Episode
 from resources.lib.kitsu.models.libraryentries import Library, LibraryEntry
@@ -85,24 +86,29 @@ def get_popular_anime():
         print(anime.slug)
     return popular_anime
 
-def get_user_id():
+def get_user_id(progress):
+    progress.update(0, "Retrieving user data")
     resp = requests.get(baseURL + 'users?filter[name]=' + addon.getSetting('username'))
     data = json.loads(resp.text)
     return data['data'][0]['id']
 
-def get_user_library():
-    userId = get_user_id()
+def get_user_library(progress):
+    userId = get_user_id(progress)
     resp = requests.get(baseURL + 'library-entries?filter[userId]=' + userId + '&filter[kind]=anime&filter[status]=current&page[limit]=20&page[offset]=0')
     data = json.loads(resp.text)
     library = Library(data['meta'])
+    progress.max = library.count + 1
     for entry in data['data']:
+        progress.easyUpdate()
         library.entries.append(LibraryEntry(entry))
     while ('next' in data['links'].keys()):
         resp = requests.get(data['links']['next'])
         data = json.loads(resp.text)
         for entry in data['data']:
+            progress.easyUpdate()
             library.entries.append(LibraryEntry(entry))
-    return library
+    return progress, library
+
 
 def get_anime_episodes(id, offset):
     resp = requests.get(baseURL + 'anime/' + str(id) + '/episodes?page[limit]=20&page[offset]=' + str(offset))

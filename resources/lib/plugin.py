@@ -3,6 +3,7 @@
 import routing
 import logging
 import xbmcaddon
+from resources.lib.utils.wrappers import Progress
 from resources.lib.utils import kodiutils
 from resources.lib.utils import kodilogging
 from resources.lib.gogoanime1.gogoanime1 import get_mp4_for_conan, get_mp4, get_latest_episode_number
@@ -30,6 +31,8 @@ def index():
         show_grouped_episodes, id = 210, slug = "detective-conan"), ListItem("Detective Conan - Kitsu"), True)
     addDirectoryItem(plugin.handle, plugin.url_for(
         user_library), ListItem("User Library"), True)
+    addDirectoryItem(plugin.handle, plugin.url_for(
+        next_episodes), ListItem("Next Episodes"), True)
     addDirectoryItem(plugin.handle, plugin.url_for(
         trending_kitsu), ListItem("Trending Anime"), True)
     addDirectoryItem(plugin.handle, plugin.url_for(
@@ -70,7 +73,9 @@ def trending_kitsu():
 
 @plugin.route('/user-library')
 def user_library():
-    library = get_user_library()
+    progress = Progress("Retrieving user library", "Getting ")
+    progress, library = get_user_library(progress)
+    progress.close()
     for entry in library.entries:
         list_item = ListItem(label=entry.anime.canonicalTitle)
         list_item.setInfo('video', entry.anime.getAnimeInfo())
@@ -84,6 +89,28 @@ def user_library():
                 show_grouped_episodes, id = entry.anime.id, slug = entry.anime.slug), list_item, is_folder)
     endOfDirectory(plugin.handle)
 
+@plugin.route('/next-episodes')
+def next_episodes():
+    print("---------next_episodes()-------")
+    progress = Progress("Retrieving user library", "Getting ")
+    progress, library = get_user_library(progress)
+    progress = Progress("Retrieving episodes", "Getting ")
+    progress.max = library.count
+    print("---------Before enter-------")
+    for entry in library.entries:
+        print("---------in loop-------")
+        label = entry.anime.canonicalTitle + " [CR] Episode " + str(entry.progress)
+        print(label)
+        progress.easyUpdate(label)
+        list_item = ListItem(label=label)
+        list_item.setInfo('video', entry.anime.getAnimeInfo())
+        list_item.setArt(entry.anime.getAnimeArt())
+        is_folder = False
+        addDirectoryItem(plugin.handle, plugin.url_for(
+            get_sources, entry.anime.slug, entry.progress), list_item, is_folder)
+    progress.close()
+    endOfDirectory(plugin.handle)
+
 
 @plugin.route('/anime/<id>/<slug>/episodes/latest-<latest_episode>/<offset>')
 def show_episodes(id, slug, latest_episode = -1, offset = 0):
@@ -92,9 +119,9 @@ def show_episodes(id, slug, latest_episode = -1, offset = 0):
     for episode in episodes:
         title = episode.canonicalTitle if episode.canonicalTitle != None else ""
         if (int(episode.number > int(latest_episode)) and int(latest_episode) != -1):
-            item_label = ("Episode " + str(episode.number) +"[CR]" + "Not released yet" )
+            item_label = ("Episode " + str(episode.number) + "[CR]" + "Not released yet" )
         else:
-            item_label = ("Episode " + str(episode.number) +"[CR]" + title )
+            item_label = ("Episode " + str(episode.number) + "[CR]" + title )
             
         list_item = ListItem(label = item_label)
         list_item.setInfo('video', episode.getEpisodeInfo())
