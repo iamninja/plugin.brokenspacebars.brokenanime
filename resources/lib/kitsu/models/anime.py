@@ -1,7 +1,17 @@
 # -*- coding: utf-8 -*-
 
 class Anime:
+
     def __init__(self, response_dict):
+        subtype = {
+            "ONA": "ONA",
+            "OVA": "OVA",
+            "TV": "TV",
+            "movie": "Movie",
+            "music": "Music",
+            "special": "Special"
+        }
+
         self.id = response_dict['id']
         self.createdAt = response_dict['attributes']['createdAt']
         self.updatedAt = response_dict['attributes']['updatedAt']
@@ -27,7 +37,7 @@ class Anime:
         # self.ageRating = response_dict['attributes']['ageRating']
         self.ageRatingGuide = response_dict['attributes']['ageRatingGuide']
         # enum
-        self.subtype = response_dict['attributes']['subtype']
+        self.subtype = subtype.get(response_dict['attributes']['subtype'])
         # enum
         self.status = response_dict['attributes']['status']
         self.tba = response_dict['attributes']['tba']
@@ -56,7 +66,13 @@ class Anime:
         }
 
     def getAnimeArt(self):
+        thumb = ""
+        posterImage = ""
+        if self.coverImage != None:
+            thumb = self.coverImage['original']
+        if self.posterImage != None:
+            thumb = self.posterImage['original']
         return {
-            'fanart': self.posterImage['original'],
-            'thumb': self.coverImage['original']
+            'fanart': posterImage,
+            'thumb': thumb
         }

@@ -6,6 +6,7 @@ import pickle
 from xbmcaddon import Addon
 from resources.lib.kitsu.models.anime import Anime
 from resources.lib.kitsu.models.episode import Episode
+from resources.lib.kitsu.models.libraryentries import Library, LibraryEntry
 
 CLIENT_ID = "dd031b32d2f56c990b1425efe6c42ad847e7fe3ab46bf1299f05ecd856bdb7dd"
 CLIENT_SECRET = "54d7307928f63414defd96399fc31ba847961ceaecef3a5fd93144e960c0e151"
@@ -84,6 +85,25 @@ def get_popular_anime():
         print(anime.slug)
     return popular_anime
 
+def get_user_id():
+    resp = requests.get(baseURL + 'users?filter[name]=' + addon.getSetting('username'))
+    data = json.loads(resp.text)
+    return data['data'][0]['id']
+
+def get_user_library():
+    userId = get_user_id()
+    resp = requests.get(baseURL + 'library-entries?filter[userId]=' + userId + '&filter[kind]=anime&filter[status]=current&page[limit]=20&page[offset]=0')
+    data = json.loads(resp.text)
+    library = Library(data['meta'])
+    for entry in data['data']:
+        library.entries.append(LibraryEntry(entry))
+    while ('next' in data['links'].keys()):
+        resp = requests.get(data['links']['next'])
+        data = json.loads(resp.text)
+        for entry in data['data']:
+            library.entries.append(LibraryEntry(entry))
+    return library
+
 def get_anime_episodes(id, offset):
     resp = requests.get(baseURL + 'anime/' + str(id) + '/episodes?page[limit]=20&page[offset]=' + str(offset))
     data = json.loads(resp.text)
@@ -99,6 +119,16 @@ def get_anime_episodes(id, offset):
             episodes.append(Episode(episode))
     print(episodes[1].canonicalTitle)
     return episodes
+
+def search_anime(query):
+    resp = requests.get(baseURL + 'anime?filter[text]=' + str(query))
+    data = json.loads(resp.text)
+    search_results = []
+    for anime in data['data']:
+        search_results.append(Anime(anime))
+    # for anime in search_results:
+    #     print(anime.slug)
+    return search_results
 
 def get_anime_by_id(id):
     resp = requests.get(baseURL + 'anime/' + str(id))

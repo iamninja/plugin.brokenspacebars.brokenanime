@@ -6,7 +6,7 @@ import xbmcaddon
 from resources.lib.utils import kodiutils
 from resources.lib.utils import kodilogging
 from resources.lib.gogoanime1.gogoanime1 import get_mp4_for_conan, get_mp4, get_latest_episode_number
-from resources.lib.kitsu.kitsu import get_token, get_trending_anime, get_popular_anime, get_anime_episodes, get_anime_by_id
+from resources.lib.kitsu.kitsu import get_token, get_trending_anime, get_popular_anime, get_anime_episodes, get_anime_by_id, search_anime, get_user_library
 from xbmcgui import ListItem, DialogProgress, Dialog
 from xbmcplugin import addDirectoryItem, endOfDirectory, setResolvedUrl
 from xbmc import Player, sleep
@@ -29,9 +29,13 @@ def index():
     addDirectoryItem(plugin.handle, plugin.url_for(
         show_grouped_episodes, id = 210, slug = "detective-conan"), ListItem("Detective Conan - Kitsu"), True)
     addDirectoryItem(plugin.handle, plugin.url_for(
+        user_library), ListItem("User Library"), True)
+    addDirectoryItem(plugin.handle, plugin.url_for(
         trending_kitsu), ListItem("Trending Anime"), True)
     addDirectoryItem(plugin.handle, plugin.url_for(
         popular_kitsu), ListItem("Popular Anime"), True)
+    addDirectoryItem(plugin.handle, plugin.url_for(
+        search), ListItem("Search Anime"), True)
     addDirectoryItem(plugin.handle, plugin.url_for(
         test_kitsu), ListItem("Test Kitsu"), True)
     endOfDirectory(plugin.handle)
@@ -40,9 +44,19 @@ def index():
 def test_kitsu():
     # get_token()
     # get_trending_anime()
-    print("---popular----")
+    print("---search----")
     # get_popular_anime()
-    get_latest_episode_number("one-piece")
+    # get_latest_episode_number("one-piece")
+    search_anime("black clover")
+
+@plugin.route('/search')
+def search():
+    # Open a text dialog (Dialog().input(...))
+    dialog = Dialog()
+    query = dialog.input("Enter search query")
+    print("Search for: " + str(query))
+    search_result = search_anime(query)
+    create_anime_list(search_result)
 
 @plugin.route('/popular-anime')
 def popular_kitsu():
@@ -53,6 +67,23 @@ def popular_kitsu():
 def trending_kitsu():
     trending = get_trending_anime()
     create_anime_list(trending)
+
+@plugin.route('/user-library')
+def user_library():
+    library = get_user_library()
+    for entry in library.entries:
+        list_item = ListItem(label=entry.anime.canonicalTitle)
+        list_item.setInfo('video', entry.anime.getAnimeInfo())
+        list_item.setArt(entry.anime.getAnimeArt())
+        is_folder = True
+        if (entry.anime.episodeCount != None) and (entry.anime.episodeCount < 80):
+            addDirectoryItem(plugin.handle, plugin.url_for(
+                show_episodes, id = entry.anime.id, slug = entry.anime.slug, latest_episode = -1, offset = 0), list_item, is_folder)
+        else:
+            addDirectoryItem(plugin.handle, plugin.url_for(
+                show_grouped_episodes, id = entry.anime.id, slug = entry.anime.slug), list_item, is_folder)
+    endOfDirectory(plugin.handle)
+
 
 @plugin.route('/anime/<id>/<slug>/episodes/latest-<latest_episode>/<offset>')
 def show_episodes(id, slug, latest_episode = -1, offset = 0):
