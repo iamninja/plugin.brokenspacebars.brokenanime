@@ -26,6 +26,7 @@ msgctxt "#32001"
 msgid "Debug"
 msgstr ""
 
+#  Kitsu
 msgctxt "#32101"
 msgid "Kitsu"
 msgstr ""
@@ -39,5 +40,22 @@ msgid "Username"
 msgstr ""
 
 msgctxt "#32121"
+msgid "Password"
+msgstr ""
+
+# AniList
+msgctxt "#32201"
+msgid "Anilist"
+msgstr ""
+
+msgctxt "#32202"
+msgid "Credentials"
+msgstr ""
+
+msgctxt "#32211"
+msgid "Username"
+msgstr ""
+
+msgctxt "#32221"
 msgid "Password"
 msgstr ""

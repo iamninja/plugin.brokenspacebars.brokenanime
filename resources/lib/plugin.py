@@ -3,11 +3,15 @@
 import routing
 import logging
 import xbmcaddon
+from pprint import pprint
+from resources.lib.utils.textformat import color_label
 from resources.lib.utils.wrappers import Progress
 from resources.lib.utils import kodiutils
 from resources.lib.utils import kodilogging
 from resources.lib.gogoanime1.gogoanime1 import get_mp4_for_conan, get_mp4, get_latest_episode_number
-from resources.lib.kitsu.kitsu import get_token, get_trending_anime, get_popular_anime, get_anime_episodes, get_anime_by_id, search_anime, get_user_library
+from resources.lib.kitsu.kitsu import get_token, get_trending_anime, get_popular_anime, get_anime_episodes, get_anime_by_id, search_anime_kitsu, get_user_library, get_slug
+from resources.lib.anilist.anilist import get_latest_episode_info, get_anilist_user_library, get_anilist_anime
+from resources.lib.models.anime import Anime
 from xbmcgui import ListItem, DialogProgress, Dialog
 from xbmcplugin import addDirectoryItem, endOfDirectory, setResolvedUrl
 from xbmc import Player, sleep
@@ -26,111 +30,137 @@ baseURL = "https://www.gogoanime1.com/watch/detective-conan/episode/episode-707"
 @plugin.route('/')
 def index():
     addDirectoryItem(plugin.handle, plugin.url_for(
+        anilist_user_library), ListItem("AniList - User Library"), True)
+    addDirectoryItem(plugin.handle, plugin.url_for(
+        search), ListItem("Search Anime"), True)
+    addDirectoryItem(plugin.handle, plugin.url_for(
         show_conan), ListItem("Detective Conan"), True)
     addDirectoryItem(plugin.handle, plugin.url_for(
         show_grouped_episodes, id = 210, slug = "detective-conan"), ListItem("Detective Conan - Kitsu"), True)
     addDirectoryItem(plugin.handle, plugin.url_for(
-        user_library), ListItem("User Library"), True)
-    addDirectoryItem(plugin.handle, plugin.url_for(
-        next_episodes), ListItem("Next Episodes"), True)
-    addDirectoryItem(plugin.handle, plugin.url_for(
-        trending_kitsu), ListItem("Trending Anime"), True)
-    addDirectoryItem(plugin.handle, plugin.url_for(
-        popular_kitsu), ListItem("Popular Anime"), True)
-    addDirectoryItem(plugin.handle, plugin.url_for(
-        search), ListItem("Search Anime"), True)
-    addDirectoryItem(plugin.handle, plugin.url_for(
-        test_kitsu), ListItem("Test Kitsu"), True)
+        test_kitsu), ListItem("Test"), True)
     endOfDirectory(plugin.handle)
 
-@plugin.route('/kitsu')
+@plugin.route('/test')
 def test_kitsu():
+    print("-----------Test-----------")
     # get_token()
     # get_trending_anime()
-    print("---search----")
     # get_popular_anime()
     # get_latest_episode_number("one-piece")
-    search_anime("black clover")
+    # search_anime("black clover")
+    # get_latest_episode_info("black-clover")
+    print(ADDON.getSetting("usernameKitsu"))
+    print(kodiutils.get_setting('usernameAnilist'))
+
+
+@plugin.route('/anilist-watching')
+def anilist_user_library():
+    entries = get_anilist_user_library(kodiutils.get_setting('usernameAnilist'))
+    animeList = []
+    for entry in entries:
+        animeList.append(Anime(entry, "anilist"))
+    for anime in animeList:
+        print(anime.titles['romaji'].encode('utf-8'))
+        list_item = ListItem(label=anime.canonicalTitle)
+        list_item.setInfo('video', anime.getAnimeInfo())
+        list_item.setArt(anime.getAnimeArt())
+        is_folder = True
+        if (anime.episodeCount != None) and (anime.episodeCount < 80):
+            addDirectoryItem(plugin.handle, plugin.url_for(
+                show_episodes_anilist, id = anime.id, latest_episode = anime.episodeCount), list_item, is_folder)
+        else:
+            addDirectoryItem(plugin.handle, plugin.url_for(
+                show_grouped_episodes_anilist, id = anime.id, latest_episode = anime.nextEpisode), list_item, is_folder)
+    endOfDirectory(plugin.handle)
 
 @plugin.route('/search')
 def search():
+    # via kitsu for now
     # Open a text dialog (Dialog().input(...))
     dialog = Dialog()
     query = dialog.input("Enter search query")
     print("Search for: " + str(query))
-    search_result = search_anime(query)
+    search_result = search_anime_kitsu(query)
     create_anime_list(search_result)
 
-@plugin.route('/popular-anime')
-def popular_kitsu():
-    popular = get_popular_anime()
-    create_anime_list(popular)
+@plugin.route('/anime/anilist/<id>/episodes/latest-<latest_episode>')
+def show_episodes_anilist(id, latest_episode = -1):
+    anime = Anime(get_anilist_anime(id), "anilist")
+    # print(anime)
+    anime.slug = get_slug(anime.titles['romaji'].encode('utf-8'))
+    # print(anime.slug)
+    if anime.episodeCount != None:
+        last = anime.episodeCount
+    else:
+        last = anime.nextEpisode
+    for i in range(1, last + 1):
+        list_item = ListItem()
+        list_item.setInfo('video', anime.getAnimeInfo())
+        list_item.setArt(anime.getAnimeArt())
+        is_folder = False
+        if (i == anime.nextEpisode and anime.status == "RELEASING"):
+            label = "Episode " + str(i) + "[CR]Airing after: " + anime.nextAiringAfter()
+            item_label = (color_label(label, 'green'))
+            list_item.setLabel(item_label)
+            addDirectoryItem(plugin.handle, "", list_item, False)
+            break
+        else:
+            item_label = ("Episode " + str(i))
+            list_item.setLabel(item_label)
+            addDirectoryItem(plugin.handle, plugin.url_for(
+                get_sources, anime.slug, i), list_item, is_folder)
+    endOfDirectory(plugin.handle)
 
-@plugin.route('/trending-anime')
-def trending_kitsu():
-    trending = get_trending_anime()
-    create_anime_list(trending)
+@plugin.route('/anime/anilist/<id>/<latest_episode>/episodes-grouped')
+def show_grouped_episodes_anilist(id, latest_episode):
+    anime = Anime(get_anilist_anime(id), service = "anilist")
+    if anime.nextEpisode != -1:
+        latest_episode = anime.nextEpisode
+    else:
+        latest_episode = anime.episodeCount
+    results = search_anime_kitsu(anime.titles['romaji'].encode('utf-8'))
+    anime = results[0]
+    # anime.slug = get_slug(anime.titles['romaji'].encode('utf-8'))
 
-@plugin.route('/user-library')
-def user_library():
-    progress = Progress("Retrieving user library", "Getting ")
-    progress, library = get_user_library(progress)
-    progress.close()
-    for entry in library.entries:
-        list_item = ListItem(label=entry.anime.canonicalTitle)
-        list_item.setInfo('video', entry.anime.getAnimeInfo())
-        list_item.setArt(entry.anime.getAnimeArt())
+    # Create a list item per 20 episodes
+    for start in range(1, int(latest_episode), 20):
+        # print("In loop: " + str(start))
+        end = str(int(start) + 19) if (int(start) + 19 <= int(latest_episode)) else str(latest_episode)
+        list_item = ListItem(label=('Episodes ' + str(start) + '-' + str(end)).encode('utf-8'))
+        list_item.setInfo('video', anime.getAnimeInfo())
+        list_item.setArt(anime.getAnimeArt())
         is_folder = True
-        if (entry.anime.episodeCount != None) and (entry.anime.episodeCount < 80):
-            addDirectoryItem(plugin.handle, plugin.url_for(
-                show_episodes, id = entry.anime.id, slug = entry.anime.slug, latest_episode = -1, offset = 0), list_item, is_folder)
-        else:
-            addDirectoryItem(plugin.handle, plugin.url_for(
-                show_grouped_episodes, id = entry.anime.id, slug = entry.anime.slug), list_item, is_folder)
-    endOfDirectory(plugin.handle)
-
-@plugin.route('/next-episodes')
-def next_episodes():
-    print("---------next_episodes()-------")
-    progress = Progress("Retrieving user library", "Getting ")
-    progress, library = get_user_library(progress)
-    progress = Progress("Retrieving episodes", "Getting ")
-    progress.max = library.count
-    print("---------Before enter-------")
-    for entry in library.entries:
-        print("---------in loop-------")
-        label = entry.anime.canonicalTitle + " [CR] Episode " + str(entry.progress)
-        print(label)
-        progress.easyUpdate(label)
-        list_item = ListItem(label=label)
-        list_item.setInfo('video', entry.anime.getAnimeInfo())
-        list_item.setArt(entry.anime.getAnimeArt())
-        is_folder = False
         addDirectoryItem(plugin.handle, plugin.url_for(
-            get_sources, entry.anime.slug, entry.progress), list_item, is_folder)
+            show_episodes, id = anime.id, slug = anime.slug, offset=str(start - 1), latest_episode=str(latest_episode)), list_item, is_folder)
+    endOfDirectory(plugin.handle)
+    pass
+
+@plugin.route('/anime/<slug>/episode/<number>/sources')
+def get_sources(slug, number):
+    print("-------------get_sources-------------")
+    progress = DialogProgress()
+    progress.create("Getting sources", "getting les sources")
+    slug = get_slug(slug)
+    urls_gogoanime = get_mp4(slug, number)
     progress.close()
-    endOfDirectory(plugin.handle)
+    dialog = Dialog()
+    if urls_gogoanime != None:
+        url_index = dialog.select('Choose a source', ['GoGoAnime1 #1'])
+        play_item = ListItem(path=urls_gogoanime[url_index])
+        play_item.setProperty('mimetype', 'video/mp4')
+        Player().play(urls_gogoanime[url_index], play_item)
+    else:
+        url_index = dialog.select('Choose a source', ['Couldn\'t find sources'])
+        play_item = ListItem(path="")
+        play_item.setProperty('mimetype', 'video/mp4')
+        Player().play("", play_item)
+    # Pass the item to the Kodi player.
+    # setResolvedUrl(plugin.handle, True, listitem=play_item)
+    # print(urls_gogoanime)
+    # Player().play(urls_gogoanime[url_index], play_item)
 
-
-@plugin.route('/anime/<id>/<slug>/episodes/latest-<latest_episode>/<offset>')
-def show_episodes(id, slug, latest_episode = -1, offset = 0):
-    # Fix episode count a bit: says 1-20 but includes 1-21
-    episodes = get_anime_episodes(id, offset)
-    for episode in episodes:
-        title = episode.canonicalTitle if episode.canonicalTitle != None else ""
-        if (int(episode.number > int(latest_episode)) and int(latest_episode) != -1):
-            item_label = ("Episode " + str(episode.number) + "[CR]" + "Not released yet" )
-        else:
-            item_label = ("Episode " + str(episode.number) + "[CR]" + title )
-            
-        list_item = ListItem(label = item_label)
-        list_item.setInfo('video', episode.getEpisodeInfo())
-        list_item.setArt(episode.getEpisodeArt())
-        is_folder = False
-        addDirectoryItem(plugin.handle, plugin.url_for(
-            get_sources, slug, episode.number), list_item, is_folder)
-    endOfDirectory(plugin.handle)
-
+#For Conan
 @plugin.route('/anime/<id>/<slug>/episodes-grouped')
 def show_grouped_episodes(id, slug):
     # Need to find the exact number of released episodes
@@ -151,28 +181,28 @@ def show_grouped_episodes(id, slug):
     endOfDirectory(plugin.handle)
     pass
 
-@plugin.route('/anime/<slug>/episode/<number>/sources')
-def get_sources(slug, number):
-    print("-------------get_sources-------------")
-    progress = DialogProgress()
-    progress.create("Getting sources", "getting les sources")
-    urls_gogoanime = get_mp4(slug, number)
-    progress.close()
-    dialog = Dialog()
-    if urls_gogoanime != None:
-        url_index = dialog.select('Choose a source', ['GoGoAnime1 #1'])
-        play_item = ListItem(path=urls_gogoanime[url_index])
-        play_item.setProperty('mimetype', 'video/mp4')
-        Player().play(urls_gogoanime[url_index], play_item)
-    else:
-        url_index = dialog.select('Choose a source', ['Couldn\'t find sources'])
-        play_item = ListItem(path="")
-        play_item.setProperty('mimetype', 'video/mp4')
-        Player().play("", play_item)
-    # Pass the item to the Kodi player.
-    # setResolvedUrl(plugin.handle, True, listitem=play_item)
-    # print(urls_gogoanime)
-    # Player().play(urls_gogoanime[url_index], play_item)
+# For Conan
+@plugin.route('/anime/kitsu/<id>/<slug>/episodes/latest-<latest_episode>/<offset>')
+def show_episodes(id, slug, latest_episode = -1, offset = 0):
+    # Kitsu will handle episodes so it can show the title
+    # Fix episode count a bit: says 1-20 but includes 1-21
+    episodes = get_anime_episodes(id, offset)
+    for episode in episodes:
+        title = episode.canonicalTitle if episode.canonicalTitle != None else ""
+        if int(episode.number) == int(latest_episode):
+            item_label = ("Episode " + str(episode.number) + "[CR]" + "Not released yet" )
+        else:
+            item_label = ("Episode " + str(episode.number) + "[CR]" + title )
+        list_item = ListItem(label = item_label)
+        list_item.setInfo('video', episode.getEpisodeInfo())
+        list_item.setArt(episode.getEpisodeArt())
+        is_folder = False
+        addDirectoryItem(plugin.handle, plugin.url_for(
+            get_sources, slug, episode.number), list_item, is_folder)
+        if int(episode.number) == int(latest_episode):
+            item_label = ("Episode " + str(episode.number) + "[CR]" + "Not released yet" )
+            break
+    endOfDirectory(plugin.handle)
 
 @plugin.route('/conan')
 def show_conan():
@@ -192,7 +222,7 @@ def show_conan():
 def show_conan_episodes(episodes):
     for i in range(int(episodes), int(episodes) + 10):
         list_item = ListItem(
-            label=("Detective Conan - " + str(i)), 
+            label=("Detective Conan - " + str(i)),
             offscreen=True)
         # list_item.setLabel2(movie.expiration_date)
         # list_item.setInfo('video', movie.getMovieInfo())
@@ -202,8 +232,8 @@ def show_conan_episodes(episodes):
         is_folder = True
         list_item
         addDirectoryItem(
-            plugin.handle, 
-            plugin.url_for(play_conan, str(i)), 
+            plugin.handle,
+            plugin.url_for(play_conan, str(i)),
             list_item, is_folder)
     endOfDirectory(plugin.handle)
 
@@ -216,7 +246,7 @@ def play_conan(episode):
     })
     is_folder = False
     addDirectoryItem(
-            plugin.handle, 
+            plugin.handle,
             get_mp4_for_conan(episode),
             item, is_folder)
     endOfDirectory(plugin.handle)

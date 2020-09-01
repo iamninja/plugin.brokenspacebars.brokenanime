@@ -3,9 +3,11 @@
 import requests
 import json
 import pickle
+from difflib import SequenceMatcher
 from xbmcaddon import Addon
+from resources.lib.utils.textformat import unicode_sandwich
 from resources.lib.utils.wrappers import Progress
-from resources.lib.kitsu.models.anime import Anime
+from resources.lib.models.anime import Anime
 from resources.lib.kitsu.models.episode import Episode
 from resources.lib.kitsu.models.libraryentries import Library, LibraryEntry
 
@@ -21,11 +23,10 @@ addon = Addon('plugin.brokenspacebars.brokenanime')
 # TODO: Debug log
 
 def get_token():
-    addon = Addon('plugin.brokenspacebars.brokenanime')
     data = {
         'grant_type': 'password',
-        'username': addon.getSetting('username'),
-        'password': addon.getSetting('password'),
+        'username': addon.getSetting('usernameKitsu'),
+        'password': addon.getSetting('passwordKitsu'),
     }
     # print(data)
     resp = requests.post(tokenURL, data)
@@ -39,7 +40,7 @@ def get_token():
     else:
         print("Couldn't get response")
     check_token()
-    
+
 
 def refresh_token(ref_token):
     data = {
@@ -63,6 +64,20 @@ def check_token():
     # with open(addon.getAddonInfo('profile') + "kitsu.json", "r") as json_file:
     #     data = json.load(json_file)
     return data['access_token']
+
+# Needs to get smarter...
+def get_slug(romaji_title):
+    resp = requests.get(baseURL + 'anime?filter[text]=' + romaji_title)
+    data = json.loads(resp.text)
+    # for result in data['data']:
+    #     print(result['attributes']['titles']['en_jp'])
+    #     print(romaji_title)
+    #     print(SequenceMatcher(result['attributes']['titles']['en_jp'], romaji_title).ratio())
+    #     # if result['attributes']['titles']['en_jp'] == romaji_title.encode('ascii'):
+    #     if SequenceMatcher(result['attributes']['titles']['en_jp'], romaji_title).ratio() >= 0.9:
+    #         return result['attributes']['slug']
+    # return romaji_title.replace(' ', '-')
+    return data['data'][0]['attributes']['slug']
 
 def get_trending_anime():
     resp = requests.get(baseURL + 'trending/anime')
@@ -113,6 +128,7 @@ def get_user_library(progress):
 def get_anime_episodes(id, offset):
     resp = requests.get(baseURL + 'anime/' + str(id) + '/episodes?page[limit]=20&page[offset]=' + str(offset))
     data = json.loads(resp.text)
+    print(data)
     episodes = []
     for episode in data['data']:
         episodes.append(Episode(episode))
@@ -126,7 +142,7 @@ def get_anime_episodes(id, offset):
     print(episodes[1].canonicalTitle)
     return episodes
 
-def search_anime(query):
+def search_anime_kitsu(query):
     resp = requests.get(baseURL + 'anime?filter[text]=' + str(query))
     data = json.loads(resp.text)
     search_results = []

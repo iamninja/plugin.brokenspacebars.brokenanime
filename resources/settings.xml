@@ -13,7 +13,7 @@
 
         <category id="kitsu" label="32101" help="">
 			<group id="1" label="32102">
-				<setting id="username" type="string" label="32111" help="">
+				<setting id="usernameKitsu" type="string" label="32111" help="">
                     <level>0</level>
                     <constraints>
                         <allowempty>true</allowempty>
@@ -24,7 +24,7 @@
                     </control>
 				</setting>
 
-                <setting id="password" type="string" label="32121" help="">
+                <setting id="passwordKitsu" type="string" label="32121" help="">
                     <level>0</level>
                     <constraints>
                         <allowempty>true</allowempty>
@@ -32,6 +32,33 @@
                     <default></default>
 					<control type="edit" format="string">
                         <heading>32121</heading>
+                        <hidden>true</hidden>
+                    </control>
+				</setting>
+			</group>
+		</category>
+
+        <category id="anilist" label="32201" help="">
+			<group id="2" label="32202">
+				<setting id="usernameAnilist" type="string" label="32211" help="">
+                    <level>0</level>
+                    <constraints>
+                        <allowempty>true</allowempty>
+                    </constraints>
+                    <default></default>
+					<control type="edit" format="string">
+                        <heading>32211</heading>
+                    </control>
+				</setting>
+
+                <setting id="passwordAnilist" type="string" label="32221" help="">
+                    <level>0</level>
+                    <constraints>
+                        <allowempty>true</allowempty>
+                    </constraints>
+                    <default></default>
+					<control type="edit" format="string">
+                        <heading>32221</heading>
                         <hidden>true</hidden>
                     </control>
 				</setting>
