@@ -25,7 +25,7 @@ ADDON = xbmcaddon.Addon()
 logger = logging.getLogger(ADDON.getAddonInfo('id'))
 kodilogging.config()
 plugin = routing.Plugin()
-
+settings = Settings()
 baseURL = "https://www.gogoanime1.com/watch/detective-conan/episode/episode-707"
 
 @plugin.route('/')
@@ -40,6 +40,9 @@ def index():
         show_grouped_episodes, id = 210, slug = "detective-conan"), ListItem("Detective Conan - Kitsu"), True)
     addDirectoryItem(plugin.handle, plugin.url_for(
         test_kitsu), ListItem("Test"), True)
+    if not settings.have_anilist_token():
+        addDirectoryItem(plugin.handle, plugin.url_for(
+            get_anilist_token), ListItem("Get AniList token"), True)
     endOfDirectory(plugin.handle)
 
 @plugin.route('/test')
@@ -53,9 +56,24 @@ def test_kitsu():
     # get_latest_episode_info("black-clover")
     print("1 - " + ADDON.getSetting("usernameKitsu"))
     print("2 - " + kodiutils.get_setting('usernameAnilist'))
-    settings = Settings()
     print(settings.kitsuUsername)
     print(settings.kitsuPassword)
+
+@plugin.route('/get_token')
+def get_anilist_token():
+    dialog = Dialog()
+    ok = dialog.yesno("Autheniticate AniList",
+        '''
+            1. Visit https://iamninja.github.io/plugin.brokenspacebars.brokenanime
+            2. Click the button and authenticate into AniList
+            3. Copy the access token and paste it on the next dialog''', nolabel="Back", yeslabel="Next"
+    )
+    if ok:
+        token = dialog.input("Paste the token")
+        print(token)
+    else:
+        pass
+
 
 
 @plugin.route('/anilist-watching')

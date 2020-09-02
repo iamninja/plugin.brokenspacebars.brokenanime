@@ -23,9 +23,9 @@ class Settings():
 
     def settings_file_exists(self):
         if os.path.isfile(self.__profile + '/settings.json'):
-            True
+            return True
         else:
-            False
+            return False
 
     def load_settings(self):
         with open(self.__profile + '/settings.json') as file:
@@ -46,3 +46,9 @@ class Settings():
         data['anilist']['access_token'] = self.anilistToken
         with open(self.__profile + '/settings.json', 'w') as file:
             json.dump(data, file)
+
+    def have_anilist_token(self):
+        if self.anilistToken != "":
+            return True
+        else:
+            return False
