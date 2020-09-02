@@ -7,12 +7,16 @@ from resources.lib.anilist.models import LatestEpisodeInfo
 
 baseURL = "https://graphql.anilist.co"
 
-def make_reuest(query, variables):
+def make_request(query, variables, auth = False):
     print("-----Making post request to anilist.co-----")
     headers = {
         'Accept-Encoding': 'gzip',
-        'Content-Type': 'application/json; charset=utf-8'
+        'Content-Type': 'application/json; charset=utf-8',
+        'Accept': 'application/json'
     }
+    if auth != False:
+        headers['Authorization'] = 'Bearer ' + 't0k3n'
+
     resp = requests.post(baseURL, json = {
         'query': query,
         'variables': variables
@@ -24,7 +28,7 @@ def get_latest_episode_info(slug):
     variables = {
         'queryString': slug,
     }
-    resp = make_reuest(queryForNextEpisode, variables)
+    resp = make_request(queryForNextEpisode, variables)
     latestInfo = LatestEpisodeInfo(resp)
     return latestInfo
 
@@ -32,7 +36,7 @@ def get_anilist_user_library(userName):
     variables = {
         'userName': userName
     }
-    resp = make_reuest(queryForWatchingAnime, variables)
+    resp = make_request(queryForWatchingAnime, variables)
     # print(resp)
     return resp['data']['MediaListCollection']['lists'][0]['entries']
 
@@ -40,5 +44,5 @@ def get_anilist_anime(id):
     variables = {
         'id': id
     }
-    resp = make_reuest(queryForAnimeInList, variables)
+    resp = make_request(queryForAnimeInList, variables)
     return resp['data']['MediaList']

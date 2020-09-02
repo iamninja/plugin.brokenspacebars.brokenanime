@@ -8,6 +8,7 @@ from resources.lib.utils.textformat import color_label
 from resources.lib.utils.wrappers import Progress
 from resources.lib.utils import kodiutils
 from resources.lib.utils import kodilogging
+from resources.lib.utils.settings import Settings
 from resources.lib.gogoanime1.gogoanime1 import get_mp4_for_conan, get_mp4, get_latest_episode_number
 from resources.lib.kitsu.kitsu import get_token, get_trending_anime, get_popular_anime, get_anime_episodes, get_anime_by_id, search_anime_kitsu, get_user_library, get_slug
 from resources.lib.anilist.anilist import get_latest_episode_info, get_anilist_user_library, get_anilist_anime
@@ -50,8 +51,11 @@ def test_kitsu():
     # get_latest_episode_number("one-piece")
     # search_anime("black clover")
     # get_latest_episode_info("black-clover")
-    print(ADDON.getSetting("usernameKitsu"))
-    print(kodiutils.get_setting('usernameAnilist'))
+    print("1 - " + ADDON.getSetting("usernameKitsu"))
+    print("2 - " + kodiutils.get_setting('usernameAnilist'))
+    settings = Settings()
+    print(settings.kitsuUsername)
+    print(settings.kitsuPassword)
 
 
 @plugin.route('/anilist-watching')

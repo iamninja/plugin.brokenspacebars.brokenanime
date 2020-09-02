@@ -2,12 +2,12 @@
 
 import requests
 import json
-from resources.lib.kitsu.models.anime import Anime
+from resources.lib.models.anime import Anime
 
 baseURL =  "https://kitsu.io/api/edge/"
 
 class LibraryEntry:
-    
+
     def __init__(self, data):
         self.id = data['id']
         self.createdAt = data['attributes']['createdAt']
@@ -30,7 +30,7 @@ class LibraryEntry:
 
         # Here will be stored the Anime object
         self.anime = self.__getAnime()
-    
+
     def __getAnime(self):
         resp = requests.get(self.animeLink)
         data = json.loads(resp.text)
