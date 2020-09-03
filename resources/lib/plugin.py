@@ -71,7 +71,9 @@ def get_anilist_token():
     )
     if ok:
         token = dialog.input("Paste the token")
-        print(token)
+        logger.debug("Given token is: " + token)
+        settings.set_anilistToken(token)
+        logger.debug("Token in settings is: " + settings.get_anilistToken())
     else:
         pass
 
