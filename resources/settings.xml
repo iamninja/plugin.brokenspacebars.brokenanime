@@ -11,7 +11,7 @@
 			</group>
 		</category>
 
-        <category id="kitsu" label="32101" help="">
+    <category id="kitsu" label="32101" help="">
 			<group id="1" label="32102">
 				<setting id="usernameKitsu" type="string" label="32111" help="">
                     <level>0</level>

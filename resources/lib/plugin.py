@@ -47,19 +47,20 @@ def index():
 
 @plugin.route('/test')
 def test_kitsu():
-    print("-----------Test-----------")
+    logger.debug("-----------Test-----------")
     # get_token()
     # get_trending_anime()
     # get_popular_anime()
     # get_latest_episode_number("one-piece")
     # search_anime("black clover")
     # get_latest_episode_info("black-clover")
-    print("1 - " + ADDON.getSetting("usernameKitsu"))
-    print("2 - " + kodiutils.get_setting('usernameAnilist'))
-    print(settings.kitsuUsername)
-    print(settings.kitsuPassword)
+    # print("1 - " + ADDON.getSetting("usernameKitsu"))
+    # print("2 - " + kodiutils.get_setting('usernameAnilist'))
+    # print(settings.kitsuUsername)
+    # print(settings.kitsuPassword)
 
-@plugin.route('/get_token')
+
+@plugin.route('/get-anilist-token')
 def get_anilist_token():
     dialog = Dialog()
     ok = dialog.yesno("Autheniticate AniList",

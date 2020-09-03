@@ -13,6 +13,8 @@ ADDON = xbmcaddon.Addon()
 # PROFILE = translatePath(ADDON.getAddonInfo('profile')).decode('utf-8')
 kodilogging.config()
 
+logging.getLogger().debug("START ADDON")
+
 plugin.run()
 
 
