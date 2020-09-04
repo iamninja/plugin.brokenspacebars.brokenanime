@@ -1,25 +1,27 @@
 # -*- coding: utf-8 -*-
 
-import routing
 import logging
-import xbmcaddon
 from pprint import pprint
+
+import routing
+import xbmcaddon
+from xbmcgui import ListItem, DialogProgress, Dialog
+from xbmcplugin import addDirectoryItem, endOfDirectory, setResolvedUrl
+from xbmc import Player, sleep
+
 from resources.lib.utils.textformat import color_label
 from resources.lib.utils.wrappers import Progress
 from resources.lib.utils import kodiutils
 from resources.lib.utils import kodilogging
 from resources.lib.utils.settings import Settings
+from resources.lib.memory.memory import MemoryStorage
 from resources.lib.gogoanime1.gogoanime1 import get_mp4_for_conan, get_mp4, get_latest_episode_number
 from resources.lib.kitsu.kitsu import get_token, get_trending_anime, get_popular_anime, get_anime_episodes, get_anime_by_id, search_anime_kitsu, get_user_library, get_slug
 from resources.lib.anilist.anilist import get_latest_episode_info, get_anilist_user_library, get_anilist_anime, set_text_activity
 from resources.lib.models.anime import Anime
-from xbmcgui import ListItem, DialogProgress, Dialog
-from xbmcplugin import addDirectoryItem, endOfDirectory, setResolvedUrl
-from xbmc import Player, sleep
 
 
 # TODO: Clean comments
-# TODO: Debug log
 
 ADDON = xbmcaddon.Addon()
 logger = logging.getLogger(ADDON.getAddonInfo('id'))
@@ -58,8 +60,14 @@ def test_kitsu():
     # print("2 - " + kodiutils.get_setting('usernameAnilist'))
     # print(settings.kitsuUsername)
     # print(settings.kitsuPassword)
-    logger.debug(set_text_activity("I am very active"))
-
+    # logger.debug(set_text_activity("I am very active"))
+    storage = MemoryStorage('foo')
+    logger.debug(storage['bar'])
+    logger.debug(storage)
+    test = 'not a secret'
+    storage['bar'] = test
+    logger.debug("New value: " + storage['bar'])
+    logger.debug(storage)
 
 @plugin.route('/get-anilist-token')
 def get_anilist_token():
@@ -87,7 +95,7 @@ def anilist_user_library():
     for entry in entries:
         animeList.append(Anime(entry, "anilist"))
     for anime in animeList:
-        print(anime.titles['romaji'].encode('utf-8'))
+        logger.debug(anime.titles['romaji'].encode('utf-8'))
         list_item = ListItem(label=anime.canonicalTitle)
         list_item.setInfo('video', anime.getAnimeInfo())
         list_item.setArt(anime.getAnimeArt())
@@ -106,7 +114,7 @@ def search():
     # Open a text dialog (Dialog().input(...))
     dialog = Dialog()
     query = dialog.input("Enter search query")
-    print("Search for: " + str(query))
+    logger.debug("Search for: " + str(query))
     search_result = search_anime_kitsu(query)
     create_anime_list(search_result)
 
@@ -164,7 +172,7 @@ def show_grouped_episodes_anilist(id, latest_episode):
 
 @plugin.route('/anime/<slug>/episode/<number>/sources')
 def get_sources(slug, number):
-    print("-------------get_sources-------------")
+    logger.debug("-------------get_sources-------------")
     progress = DialogProgress()
     progress.create("Getting sources", "getting les sources")
     slug = get_slug(slug)

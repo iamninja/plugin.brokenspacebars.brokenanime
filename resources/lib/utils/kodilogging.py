@@ -1,11 +1,12 @@
 # -*- coding: utf-8 -*-
 
 from __future__ import unicode_literals
-from resources.lib.utils.kodiutils import get_setting_as_bool
-
 import logging
+
 import xbmc
 import xbmcaddon
+
+from resources.lib.utils.kodiutils import get_setting_as_bool
 
 
 class KodiLogHandler(logging.StreamHandler):

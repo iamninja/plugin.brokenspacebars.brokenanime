@@ -2,6 +2,7 @@
 
 from resources.lib.utils import kodilogging
 from resources.lib import plugin
+from resources.lib.memory.memory import MemoryStorage
 
 import logging
 import xbmcaddon
@@ -14,6 +15,9 @@ ADDON = xbmcaddon.Addon()
 kodilogging.config()
 
 logging.getLogger().debug("START ADDON")
+
+storage = MemoryStorage('foo')
+storage['bar'] = 'secret'
 
 plugin.run()
 
