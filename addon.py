@@ -14,10 +14,7 @@ ADDON = xbmcaddon.Addon()
 # PROFILE = translatePath(ADDON.getAddonInfo('profile')).decode('utf-8')
 kodilogging.config()
 
-logging.getLogger().debug("START ADDON")
-
-storage = MemoryStorage('foo')
-storage['bar'] = 'secret'
+logging.getLogger().debug("----------START brokenanime ADDON----------")
 
 plugin.run()
 
