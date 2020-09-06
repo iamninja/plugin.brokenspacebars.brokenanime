@@ -147,11 +147,12 @@ def show_episodes_anilist(id, latest_episode = -1):
             addDirectoryItem(plugin.handle, plugin.url_for(
                 get_sources, anime.slug, i), list_item, is_folder)
 
-        storage = MemoryStorage('ani')
-        current = {
-            'anime_id': anime.id,
-        }
-        storage['current'] = current
+    storage = MemoryStorage('ani')
+    current = {
+        'anime_id': anime.id,
+        'progress': anime.progress
+    }
+    storage['current'] = current
     endOfDirectory(plugin.handle)
 
 @plugin.route('/anime/anilist/<id>/<latest_episode>/episodes-grouped')
@@ -200,7 +201,7 @@ def get_sources(slug, number):
     # Add selected episode number to MemoryStorage
     storage = MemoryStorage('ani')
     current = storage['current']
-    current['episode'] = number
+    current['episode'] = int(number)
     storage['current'] = current
     # Pass the item to the Kodi player.
     # setResolvedUrl(plugin.handle, True, listitem=play_item)

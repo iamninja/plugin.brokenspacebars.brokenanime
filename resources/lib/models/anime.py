@@ -94,7 +94,7 @@ class Anime:
 
     def __loadFromAnilist(self, response_dict):
         self.id = response_dict['id']
-        self.progress = response_dict['progress'] if 'progress' in response_dict.keys() else None
+        self.progress = response_dict['progress'] if 'progress' in response_dict.keys() else 0
         # self.createdAt = response_dict['attributes']['createdAt']
         # self.updatedAt = response_dict['attributes']['updatedAt']
         # self.slug = response_dict['attributes']['slug']
