@@ -29,7 +29,8 @@ def getPercentage():
     return resp['percentage']
 
 def doesItRequireUpdate():
-    if 'episode' in storage['current'].keys():
+    # if 'episode' in storage['current'].keys():
+    if storage['current']['requireCheck']:
         if int(storage['current']['progress']) < int(storage['current']['episode']):
             logger.debug("We will need to update")
             return True
@@ -41,16 +42,29 @@ def doesItRequireUpdate():
         return None
 
 while True:
-    if xbmc.Player().isPlaying():
-        logger.debug("Playing something!!!!")
+    # Check if there is a storage item loaded
+    try:
+        requireCheck = storage['current']['requireCheck']
+    except:
+        time.sleep(10)
+        continue
+
+    # If something is loaded and playing
+    if xbmc.Player().isPlaying() and requireCheck:
+        logger.debug("Playing something from brokenanime!!!!")
         try:
             logger.debug(storage)
         except:
             logger.debug('Exception thrown')
 
-        doesItRequireUpdate()
+        if doesItRequireUpdate() and (getPercentage() > 70.0):
+            # Make the update call
+            # Update requiredCheck if successful
+            logger.debug("I will update")
+            pass
+        else:
+            logger.debug("Not ready to update yet")
 
-        logger.debug(getPercentage())
     else:
         logger.debug("Not playing :(")
         # print(storage['current'])

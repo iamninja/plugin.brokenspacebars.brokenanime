@@ -22,6 +22,7 @@ from resources.lib.models.anime import Anime
 
 
 # TODO: Clean comments
+# TODO: Indicate watched episodes (show_episodes_anilist())
 
 ADDON = xbmcaddon.Addon()
 logger = logging.getLogger(ADDON.getAddonInfo('id'))
@@ -150,7 +151,9 @@ def show_episodes_anilist(id, latest_episode = -1):
     storage = MemoryStorage('ani')
     current = {
         'anime_id': anime.id,
-        'progress': anime.progress
+        'progress': anime.progress,
+        'requireCheck': True
+
     }
     storage['current'] = current
     endOfDirectory(plugin.handle)
