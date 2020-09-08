@@ -17,12 +17,13 @@ from resources.lib.utils.settings import Settings
 from resources.lib.memory.memory import MemoryStorage
 from resources.lib.gogoanime1.gogoanime1 import get_mp4_for_conan, get_mp4, get_latest_episode_number
 from resources.lib.kitsu.kitsu import get_token, get_trending_anime, get_popular_anime, get_anime_episodes, get_anime_by_id, search_anime_kitsu, get_user_library, get_slug
-from resources.lib.anilist.anilist import get_latest_episode_info, get_anilist_user_library, get_anilist_anime, set_text_activity
+from resources.lib.anilist.anilist import get_latest_episode_info, get_anilist_user_library, get_anilist_anime, set_text_activity, update_anime
 from resources.lib.models.anime import Anime
 
 
 # TODO: Clean comments
 # TODO: Indicate watched episodes (show_episodes_anilist())
+# TODO: Fix service crashing on multipage anime
 
 ADDON = xbmcaddon.Addon()
 logger = logging.getLogger(ADDON.getAddonInfo('id'))
@@ -71,6 +72,7 @@ def test_kitsu():
     # logger.debug("New value: " + storage['bar'])
     # logger.debug(storage)
     # logger.debug(kodiutils.kodi_json_request(params3))
+    # logger.debug(update_anime(133903058, 3))
 
 @plugin.route('/get-anilist-token')
 def get_anilist_token():
@@ -205,6 +207,7 @@ def get_sources(slug, number):
     storage = MemoryStorage('ani')
     current = storage['current']
     current['episode'] = int(number)
+    current['requireCheck'] = True
     storage['current'] = current
     # Pass the item to the Kodi player.
     # setResolvedUrl(plugin.handle, True, listitem=play_item)

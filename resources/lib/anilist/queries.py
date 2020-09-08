@@ -191,13 +191,3 @@ queryForAnimeInList = '''
         }
     }
 '''
-
-mutationForSaveTextActivity = '''
-    mutation ($text: String) {
-        SaveTextActivity(text: $text) {
-            id
-            text
-            isLocked
-        }
-    }
-'''

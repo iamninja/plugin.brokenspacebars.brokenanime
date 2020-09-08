@@ -3,6 +3,8 @@
 from time import time
 from resources.lib.utils.textformat import secondsToRemaining, createSlug
 
+# TODO: Get trailer from anilist query
+
 class Anime:
 
     def __init__(self, response_dict, service = "kitsu"):

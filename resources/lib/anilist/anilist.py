@@ -3,7 +3,8 @@
 import requests
 import json
 import logging
-from resources.lib.anilist.queries import queryForNextEpisode, queryForWatchingAnime, queryForAnimeInList, mutationForSaveTextActivity
+from resources.lib.anilist.queries import queryForNextEpisode, queryForWatchingAnime, queryForAnimeInList
+from resources.lib.anilist.mutations import mutationForSaveTextActivity, mutationForUpdatingAnime
 from resources.lib.anilist.models import LatestEpisodeInfo
 from resources.lib.utils.settings import Settings
 
@@ -11,7 +12,7 @@ baseURL = "https://graphql.anilist.co"
 settings = Settings()
 logger = logging.getLogger('plugin.brokenspacebars.brokenanime')
 
-def make_request(query, variables, auth = False):
+def make_request(query, variables, auth=False):
     logger.debug("-----Making post request to anilist.co-----")
     headers = {
         'Accept-Encoding': 'gzip',
@@ -21,10 +22,10 @@ def make_request(query, variables, auth = False):
     if auth != False:
         headers['Authorization'] = 'Bearer ' + settings.get_anilistToken()
 
-    resp = requests.post(baseURL, json = {
+    resp = requests.post(baseURL, json={
         'query': query,
         'variables': variables
-    }, headers = headers)
+    }, headers=headers)
     resp.encoding = resp.apparent_encoding
     logger.debug("Response: " + resp.text)
     return json.loads(resp.text)
@@ -56,5 +57,15 @@ def set_text_activity(text):
     variables = {
         'text': text
     }
-    resp = make_request(mutationForSaveTextActivity, variables, auth = True)
+    resp = make_request(mutationForSaveTextActivity, variables, auth=True)
+    return resp
+
+# TODO: Maybe multi dispatch update_anime (id, entryId)
+
+def update_anime(id, newProgress):
+    variables = {
+        'id': id,
+        'newProgress': newProgress
+    }
+    resp = make_request(mutationForUpdatingAnime, variables, auth=True)
     return resp
