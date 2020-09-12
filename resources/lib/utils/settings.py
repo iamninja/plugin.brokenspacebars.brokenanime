@@ -2,8 +2,16 @@
 
 import os
 import json
+import logging
+
 import xbmcaddon
 from xbmc import translatePath
+
+from resources.lib.utils import kodilogging
+
+ADDON = xbmcaddon.Addon()
+logger = logging.getLogger(ADDON.getAddonInfo('id'))
+kodilogging.config()
 
 class Settings():
 
@@ -13,7 +21,7 @@ class Settings():
         if self.settings_file_exists():
             self.load_settings()
         else:
-            print("3 - " + self.__addon.getSetting('usernameKitsu'))
+            logger.debug("3 - " + self.__addon.getSetting('usernameKitsu'))
             self.__kitsuUsername = self.__addon.getSetting('usernameKitsu')
             self.__kitsuPassword = self.__addon.getSetting('passwordKitsu')
             self.__anilistUsername = self.__addon.getSetting('usernameAnilist')

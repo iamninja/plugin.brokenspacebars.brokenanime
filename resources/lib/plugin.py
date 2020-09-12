@@ -235,11 +235,10 @@ def show_grouped_episodes(id, slug):
     endOfDirectory(plugin.handle)
     pass
 
-# For Conan
+# For Conan and for grouped anilist
 @plugin.route('/anime/kitsu/<id>/<slug>/episodes/latest-<latest_episode>/<offset>')
 def show_episodes(id, slug, latest_episode = -1, offset = 0):
     # Kitsu will handle episodes so it can show the title
-    # Fix episode count a bit: says 1-20 but includes 1-21
     episodes = get_anime_episodes(id, offset)
     for episode in episodes:
         title = episode.canonicalTitle if episode.canonicalTitle != None else ""

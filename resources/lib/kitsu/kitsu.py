@@ -3,8 +3,12 @@
 import requests
 import json
 import pickle
+import logging
 from difflib import SequenceMatcher
-from xbmcaddon import Addon
+
+import xbmcaddon
+
+from resources.lib.utils import kodilogging
 from resources.lib.utils.textformat import unicode_sandwich
 from resources.lib.utils.wrappers import Progress
 from resources.lib.models.anime import Anime
@@ -16,7 +20,10 @@ CLIENT_SECRET = "54d7307928f63414defd96399fc31ba847961ceaecef3a5fd93144e960c0e15
 tokenURL = "https://kitsu.io/api/oauth/token"
 baseURL =  "https://kitsu.io/api/edge/"
 
-addon = Addon('plugin.brokenspacebars.brokenanime')
+addon = xbmcaddon.Addon('plugin.brokenspacebars.brokenanime')
+ADDON = xbmcaddon.Addon()
+logger = logging.getLogger(ADDON.getAddonInfo('id'))
+kodilogging.config()
 
 # TODO: save pickles in a better place
 # TODO: Clean comments
@@ -30,7 +37,7 @@ def get_token():
     }
     # print(data)
     resp = requests.post(tokenURL, data)
-    print(addon.getAddonInfo('profile'))
+    logger.debug(addon.getAddonInfo('profile'))
     # print(resp.text)
     if resp.status_code == 200:
         pickle.dump(json.loads(resp.text), open(
@@ -38,7 +45,7 @@ def get_token():
         # with open(addon.getAddonInfo('path') + 'kitsu.json', 'w') as outfile:
         #     json.dump(resp.text, outfile)
     else:
-        print("Couldn't get response")
+        logger.info("Couldn't get response")
     check_token()
 
 
@@ -48,18 +55,18 @@ def refresh_token(ref_token):
         'refresh_token': ref_token
     }
     resp = requests.post(tokenURL, data)
-    print(resp)
+    logger.debug(resp)
     if resp.status_code == 200:
         pickle.dump(json.loads(resp.text), open(
-            addon.getAddonInfo('path') + "/kitsu.pickle", "wb"))
+            ADDON.getAddonInfo('path') + "/kitsu.pickle", "wb"))
     else:
-        print("Couldn't get response")
+        logger.debug("Couldn't get response")
 
 # TODO: Check expiration
 def check_token():
-    addon = Addon('plugin.brokenspacebars.brokenanime')
+    # addon = Addon('plugin.brokenspacebars.brokenanime')
     data = pickle.load(open(
-        addon.getAddonInfo('path') + "/kitsu.pickle", "rb"))
+        ADDON.getAddonInfo('path') + "/kitsu.pickle", "rb"))
     # data = {}
     # with open(addon.getAddonInfo('profile') + "kitsu.json", "r") as json_file:
     #     data = json.load(json_file)
@@ -87,7 +94,7 @@ def get_trending_anime():
     for anime in data['data']:
         trending_anime.append(Anime(anime))
     for anime in trending_anime:
-        print(anime.slug)
+        logger.debug(anime.slug)
     return trending_anime
 
 def get_popular_anime():
@@ -98,7 +105,7 @@ def get_popular_anime():
         popular_anime.append(Anime(anime))
     # print(data)
     for anime in popular_anime:
-        print(anime.slug)
+        logger.debug(anime.slug)
     return popular_anime
 
 def get_user_id(progress):
@@ -128,7 +135,7 @@ def get_user_library(progress):
 def get_anime_episodes(id, offset):
     resp = requests.get(baseURL + 'anime/' + str(id) + '/episodes?page[limit]=20&page[offset]=' + str(offset))
     data = json.loads(resp.text)
-    print(data)
+    logger.debug(data)
     episodes = []
     for episode in data['data']:
         episodes.append(Episode(episode))
@@ -139,7 +146,7 @@ def get_anime_episodes(id, offset):
         data = json.loads(resp.text)
         for episode in data['data']:
             episodes.append(Episode(episode))
-    print(episodes[1].canonicalTitle)
+    logger.debug(episodes[1].canonicalTitle)
     return episodes
 
 def search_anime_kitsu(query):
