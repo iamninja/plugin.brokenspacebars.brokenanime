@@ -123,18 +123,21 @@ def search():
     search_result = search_anime_kitsu(query)
     create_anime_list(search_result)
 
+# TODO: Needs refacotring
 @plugin.route('/anime/anilist/<id>/episodes/latest-<latest_episode>/offset-<offset>')
 def show_episodes_anilist(id, latest_episode = -1, offset = 1):
     anime = Anime(get_anilist_anime(id), "anilist")
     # logger.debug(anime)
     anime.slug = get_slug(anime.titles['romaji'].encode('utf-8'))
     # logger.debug(anime.slug)
+
     if anime.episodeCount != None:
         last = anime.episodeCount
     elif (int(latest_episode) - int(offset) <= 20):
         last = anime.nextEpisode
     else:
         last = int(offset) + 20 - 1
+
     for i in range(int(offset), last + 1):
         list_item = ListItem()
         list_item.setInfo('video', anime.getAnimeInfo())
@@ -142,12 +145,17 @@ def show_episodes_anilist(id, latest_episode = -1, offset = 1):
         is_folder = False
         if (i == anime.nextEpisode and anime.status == "RELEASING"):
             label = "Episode " + str(i) + "[CR]Airing after: " + anime.nextAiringAfter()
+            if (i == anime.progress + 1):
+                label = "(Up Next) " + label
             item_label = (color_label(label, 'green'))
             list_item.setLabel(item_label)
             addDirectoryItem(plugin.handle, "", list_item, False)
             break
         else:
             item_label = ("Episode " + str(i))
+            if (i == anime.progress + 1):
+                item_label = "(Up Next) " + item_label
+                item_label = (color_label(item_label, 'blue'))
             list_item.setLabel(item_label)
             addDirectoryItem(plugin.handle, plugin.url_for(
                 get_sources, anime.slug, i), list_item, is_folder)
@@ -182,6 +190,8 @@ def show_grouped_episodes_anilist(id, latest_episode):
         # print("In loop: " + str(start))
         end = str(int(start) + 19) if (int(start) + 19 <= int(latest_episode)) else str(latest_episode)
         list_item = ListItem(label=('Episodes ' + str(start) + '-' + str(end)).encode('utf-8'))
+        if anime.progress in range(int(start), int(end)):
+            list_item.setLabel(color_label(list_item.getLabel(), 'blue'))
         list_item.setInfo('video', anime.getAnimeInfo())
         list_item.setArt(anime.getAnimeArt())
         is_folder = True
