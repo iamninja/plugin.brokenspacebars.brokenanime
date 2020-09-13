@@ -107,7 +107,7 @@ def anilist_user_library():
         is_folder = True
         if (anime.episodeCount != None) and (anime.episodeCount < 80):
             addDirectoryItem(plugin.handle, plugin.url_for(
-                show_episodes_anilist, id = anime.id, latest_episode = anime.episodeCount), list_item, is_folder)
+                show_episodes_anilist, id = anime.id, latest_episode = anime.episodeCount, offset = 1), list_item, is_folder)
         else:
             addDirectoryItem(plugin.handle, plugin.url_for(
                 show_grouped_episodes_anilist, id = anime.id, latest_episode = anime.nextEpisode), list_item, is_folder)
@@ -123,17 +123,19 @@ def search():
     search_result = search_anime_kitsu(query)
     create_anime_list(search_result)
 
-@plugin.route('/anime/anilist/<id>/episodes/latest-<latest_episode>')
-def show_episodes_anilist(id, latest_episode = -1):
+@plugin.route('/anime/anilist/<id>/episodes/latest-<latest_episode>/offset-<offset>')
+def show_episodes_anilist(id, latest_episode = -1, offset = 1):
     anime = Anime(get_anilist_anime(id), "anilist")
     # logger.debug(anime)
     anime.slug = get_slug(anime.titles['romaji'].encode('utf-8'))
     # logger.debug(anime.slug)
     if anime.episodeCount != None:
         last = anime.episodeCount
-    else:
+    elif (int(latest_episode) - int(offset) <= 20):
         last = anime.nextEpisode
-    for i in range(1, last + 1):
+    else:
+        last = int(offset) + 20 - 1
+    for i in range(int(offset), last + 1):
         list_item = ListItem()
         list_item.setInfo('video', anime.getAnimeInfo())
         list_item.setArt(anime.getAnimeArt())
@@ -167,8 +169,12 @@ def show_grouped_episodes_anilist(id, latest_episode):
         latest_episode = anime.nextEpisode
     else:
         latest_episode = anime.episodeCount
-    results = search_anime_kitsu(anime.titles['romaji'].encode('utf-8'))
-    anime = results[0]
+
+    # Retrieve kitsu-anime object so we can get the titles (Deprecate it)
+    # results = search_anime_kitsu(anime.titles['romaji'].encode('utf-8'))
+    # anime = results[0]
+
+    # Get slug from kitsu
     # anime.slug = get_slug(anime.titles['romaji'].encode('utf-8'))
 
     # Create a list item per 20 episodes
@@ -180,7 +186,8 @@ def show_grouped_episodes_anilist(id, latest_episode):
         list_item.setArt(anime.getAnimeArt())
         is_folder = True
         addDirectoryItem(plugin.handle, plugin.url_for(
-            show_episodes, id = anime.id, slug = anime.slug, offset=str(start - 1), latest_episode=str(latest_episode)), list_item, is_folder)
+            # show_episodes, id = anime.id, slug = anime.slug, offset=str(start - 1), latest_episode=str(latest_episode)), list_item, is_folder)
+            show_episodes_anilist, id = anime.id, offset=str(start), latest_episode=str(latest_episode)), list_item, is_folder)
     endOfDirectory(plugin.handle)
     pass
 
