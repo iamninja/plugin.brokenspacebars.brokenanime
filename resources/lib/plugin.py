@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 
 import logging
-from pprint import pprint
 
 import routing
 import xbmcaddon
@@ -86,8 +85,6 @@ def get_anilist_token():
         logger.debug("Token in settings is: " + settings.get_anilistToken())
     else:
         pass
-
-
 
 @plugin.route('/anilist-watching')
 def anilist_user_library():

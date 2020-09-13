@@ -4,37 +4,45 @@ import re
 import requests
 import time
 import random
+import logging
 from urllib import quote
+
 from bs4 import BeautifulSoup
+import xbmcaddon
+
+from resources.lib.utils import kodilogging
 
 conanURL = "https://www.gogoanime1.com/watch/detective-conan/episode/episode-"
 baseURL = "https://www.gogoanime1.com/watch/"
 
 # TODO: Clean comments
-# TODO: Debug log
+
+ADDON = xbmcaddon.Addon()
+logger = logging.getLogger(ADDON.getAddonInfo('id'))
+kodilogging.config()
 
 def get_mp4_for_conan(episode):
-    print(conanURL + str(episode))
+    logger.debug(conanURL + str(episode))
     resp = requests.get(baseURL + str(episode))
     resp.encoding = resp.apparent_encoding
     soup = BeautifulSoup(resp.text, 'html.parser')
     vid = soup.find_all("script")[10].prettify()
     match = re.findall(r'\"(.+?)\"', vid)
     # resp2 = requests.get(match[0])
-    # print("-----" + resp2.status_code)
-    # print("sleeping")
+    # logger.debug("-----" + resp2.status_code)
+    # logger.debug("sleeping")
     # time.sleep(60)
     if match:
-        print(match[0])
+        logger.debug(match[0])
     else:
-        print("Not Found")
-    # print(vid)
-    
+        logger.debug("Not Found")
+    # logger.debug(vid)
+
     return match[0]
 
 def get_mp4(slug, episode):
-    print("----------get_mp4()----------")
-    print(baseURL + str(slug) + "/episode/episode-" + str(episode))
+    logger.debug("----------get_mp4()----------")
+    logger.debug(baseURL + str(slug) + "/episode/episode-" + str(episode))
     resp = requests.get(baseURL + str(slug) + "/episode/episode-" + str(episode))
     resp.encoding = resp.apparent_encoding
     soup = BeautifulSoup(resp.text, 'html.parser')
@@ -42,11 +50,11 @@ def get_mp4(slug, episode):
         return None
     vid = soup.find_all("script")[10].prettify()
     match = re.findall(r'\"(.+?)\"',vid)
-    # print(vid)
+    # logger.debug(vid)
     if match:
-        print(match[0])
+        logger.debug(match[0])
     else:
-        print("Not Found")
+        logger.debug("Not Found")
         return
     # Add random
     # url = match[0].replace('https', 'http')
@@ -68,7 +76,7 @@ def get_latest_episode_number(slug):
     soup = BeautifulSoup(resp.text, 'html.parser')
     # latest_episode = soup.find("div", class_="epCheck").find_next('a').get('href').split("-")[-1]
     latest_episode = soup.find_all('a', text=re.compile("Episode"))[1].get('href').split('-')[-1]
-    print("Latest episode found for " + str(slug) + " is " + str(latest_episode))
+    logger.debug("Latest episode found for " + str(slug) + " is " + str(latest_episode))
     return latest_episode
 
 

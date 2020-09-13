@@ -27,7 +27,7 @@ def make_request(query, variables, auth=False):
         'variables': variables
     }, headers=headers)
     resp.encoding = resp.apparent_encoding
-    logger.debug("Response: " + resp.text)
+    logger.debug("Response status: " + resp.status_code)
     return json.loads(resp.text)
 
 def get_latest_episode_info(slug):
@@ -43,7 +43,6 @@ def get_anilist_user_library(userName):
         'userName': userName
     }
     resp = make_request(queryForWatchingAnime, variables)
-    # print(resp)
     return resp['data']['MediaListCollection']['lists'][0]['entries']
 
 def get_anilist_anime(id):

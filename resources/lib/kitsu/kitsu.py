@@ -27,7 +27,6 @@ kodilogging.config()
 
 # TODO: save pickles in a better place
 # TODO: Clean comments
-# TODO: Debug log
 
 def get_token():
     data = {
@@ -35,10 +34,10 @@ def get_token():
         'username': addon.getSetting('usernameKitsu'),
         'password': addon.getSetting('passwordKitsu'),
     }
-    # print(data)
+    # logger.debug(data)
     resp = requests.post(tokenURL, data)
     logger.debug(addon.getAddonInfo('profile'))
-    # print(resp.text)
+    # logger.debug(resp.text)
     if resp.status_code == 200:
         pickle.dump(json.loads(resp.text), open(
             addon.getAddonInfo('path') + "/kitsu.pickle", "wb"))
@@ -77,9 +76,9 @@ def get_slug(romaji_title):
     resp = requests.get(baseURL + 'anime?filter[text]=' + romaji_title)
     data = json.loads(resp.text)
     # for result in data['data']:
-    #     print(result['attributes']['titles']['en_jp'])
-    #     print(romaji_title)
-    #     print(SequenceMatcher(result['attributes']['titles']['en_jp'], romaji_title).ratio())
+    #     logger.debug(result['attributes']['titles']['en_jp'])
+    #     logger.debug(romaji_title)
+    #     logger.debug(SequenceMatcher(result['attributes']['titles']['en_jp'], romaji_title).ratio())
     #     # if result['attributes']['titles']['en_jp'] == romaji_title.encode('ascii'):
     #     if SequenceMatcher(result['attributes']['titles']['en_jp'], romaji_title).ratio() >= 0.9:
     #         return result['attributes']['slug']
@@ -90,7 +89,7 @@ def get_trending_anime():
     resp = requests.get(baseURL + 'trending/anime')
     data = json.loads(resp.text)
     trending_anime = []
-    # print(data)
+    # logger.debug(data)
     for anime in data['data']:
         trending_anime.append(Anime(anime))
     for anime in trending_anime:
@@ -103,7 +102,7 @@ def get_popular_anime():
     popular_anime = []
     for anime in data['data']:
         popular_anime.append(Anime(anime))
-    # print(data)
+    # logger.debug(data)
     for anime in popular_anime:
         logger.debug(anime.slug)
     return popular_anime
@@ -156,7 +155,7 @@ def search_anime_kitsu(query):
     for anime in data['data']:
         search_results.append(Anime(anime))
     # for anime in search_results:
-    #     print(anime.slug)
+    #     logger.debug(anime.slug)
     return search_results
 
 def get_anime_by_id(id):
