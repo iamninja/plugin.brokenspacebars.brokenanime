@@ -141,7 +141,7 @@ queryForWatchingAnime = '''
         }
     }
 '''
-
+# TODO: Needs documentaion
 queryForAnimeInList = '''
     query ($id: Int) {
         MediaList(id: $id) {
@@ -186,6 +186,67 @@ queryForAnimeInList = '''
                     id
                     episode
                     airingAt
+                }
+            }
+        }
+    }
+'''
+
+# Search anilist api for anime using slug
+# and returns next airing episode
+# variables: $querystring: String
+# example: { 'queryString': "one-piece" }
+# example response:
+# {
+#   "data": {
+#     "Media": {
+#       "id": 21,
+#       "title": {
+#         "romaji": "One Piece",
+#         "english": "One Piece",
+#         "native": "ワンピース",
+#         "userPreferred": "One Piece"
+#       },
+#       "status": "RELEASING",
+#       "episodes": null,
+#       "nextAiringEpisode": {
+#         "id": 288400,
+#         "episode": 939,
+#         "airingAt": 1598747400
+#       }
+#     }
+#   }
+# }
+querySearchAnime = '''
+    query ($query: String) {
+        Page(perPage: 15) {
+            pageInfo {
+                total
+            }
+            resultsAnime:media(search: $query, type: ANIME) {
+                id
+                idMal
+                title {
+                    romaji
+                    english
+                    native
+                    userPreferred
+                }
+                status
+                synonyms
+                description
+                startDate {
+                    year
+                }
+                coverImage {
+                    extraLarge
+                    large
+                    medium
+                    color
+                }
+                bannerImage
+                mediaListEntry {
+                    id
                 }
             }
         }

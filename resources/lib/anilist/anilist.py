@@ -3,7 +3,7 @@
 import requests
 import json
 import logging
-from resources.lib.anilist.queries import queryForNextEpisode, queryForWatchingAnime, queryForAnimeInList
+from resources.lib.anilist.queries import queryForNextEpisode, queryForWatchingAnime, queryForAnimeInList, querySearchAnime
 from resources.lib.anilist.mutations import mutationForSaveTextActivity, mutationForUpdatingAnime
 from resources.lib.anilist.models import LatestEpisodeInfo
 from resources.lib.utils.settings import Settings
@@ -27,7 +27,7 @@ def make_request(query, variables, auth=False):
         'variables': variables
     }, headers=headers)
     resp.encoding = resp.apparent_encoding
-    logger.debug("Response status: " + resp.status_code)
+    logger.debug("Response status: " + str(resp.status_code))
     return json.loads(resp.text)
 
 def get_latest_episode_info(slug):
@@ -60,11 +60,17 @@ def set_text_activity(text):
     return resp
 
 # TODO: Maybe multi dispatch update_anime (id, entryId)
-
 def update_anime(id, newProgress):
     variables = {
         'id': id,
         'newProgress': newProgress
     }
     resp = make_request(mutationForUpdatingAnime, variables, auth=True)
+    return resp
+
+def search_anime(query, auth=False):
+    variables = {
+        'query': query
+    }
+    resp = make_request(querySearchAnime, variables, auth)
     return resp

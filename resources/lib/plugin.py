@@ -15,14 +15,13 @@ from resources.lib.utils import kodilogging
 from resources.lib.utils.settings import Settings
 from resources.lib.memory.memory import MemoryStorage
 from resources.lib.gogoanime1.gogoanime1 import get_mp4_for_conan, get_mp4, get_latest_episode_number
-from resources.lib.kitsu.kitsu import get_token, get_trending_anime, get_popular_anime, get_anime_episodes, get_anime_by_id, search_anime_kitsu, get_user_library, get_slug
-from resources.lib.anilist.anilist import get_latest_episode_info, get_anilist_user_library, get_anilist_anime, set_text_activity, update_anime
+from resources.lib.kitsu.kitsu import get_slug
+from resources.lib.anilist.anilist import get_latest_episode_info, get_anilist_user_library, get_anilist_anime, set_text_activity, update_anime, search_anime
 from resources.lib.models.anime import Anime
+from resources.lib.models.search import AnimeResults
 
 
 # TODO: Clean comments
-# TODO: Indicate watched episodes (show_episodes_anilist())
-# TODO: Fix service crashing on multipage anime
 
 ADDON = xbmcaddon.Addon()
 logger = logging.getLogger(ADDON.getAddonInfo('id'))
@@ -47,27 +46,11 @@ def index():
 @plugin.route('/test')
 def test_kitsu():
     logger.debug("-----------Test-----------")
-    # get_token()
-    # get_trending_anime()
-    # get_popular_anime()
-    # get_latest_episode_number("one-piece")
-    # search_anime("black clover")
-    # get_latest_episode_info("black-clover")
-    # print("1 - " + ADDON.getSetting("usernameKitsu"))
-    # print("2 - " + kodiutils.get_setting('usernameAnilist'))
-    # print(settings.kitsuUsername)
-    # print(settings.kitsuPassword)
-    # logger.debug(set_text_activity("I am very active"))
-    # Testing MemoryStorage
-    # storage = MemoryStorage('foo')
-    # logger.debug(storage['bar'])
-    # logger.debug(storage)
-    # test = 'not a secret'
-    # storage['bar'] = test
-    # logger.debug("New value: " + storage['bar'])
-    # logger.debug(storage)
-    # logger.debug(kodiutils.kodi_json_request(params3))
-    # logger.debug(update_anime(133903058, 3))
+    search_results = search_anime('black', True)
+    animeResults = AnimeResults(search_results['data']['Page'])
+    logger.debug(animeResults.total)
+    logger.debug(animeResults.list[0].title['romaji'])
+
 
 @plugin.route('/get-anilist-token')
 def get_anilist_token():
@@ -108,12 +91,13 @@ def anilist_user_library():
 
 @plugin.route('/search')
 def search():
-    # via kitsu for now
+    # Search through anilist
     # Open a text dialog (Dialog().input(...))
     dialog = Dialog()
     query = dialog.input("Enter search query")
     logger.debug("Search for: " + str(query))
-    search_result = search_anime_kitsu(query)
+    search_result = search_anime(query, False)
+    logger.debug(search_result)
     # create_anime_list(search_result)
 
 # TODO: Needs refacotring
