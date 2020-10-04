@@ -192,6 +192,53 @@ queryForAnimeInList = '''
     }
 '''
 
+# TODO: Needs documentaion
+queryForAnime = '''
+    query ($id: Int) {
+        media: Media(id: $id) {
+            id
+            episodes
+            title {
+                english
+                romaji
+                native
+                userPreferred
+            }
+            synonyms
+            description
+            status
+            source
+            format
+            averageScore
+            isAdult
+            duration
+            type
+            startDate {
+                year
+                month
+                day
+            }
+            endDate {
+                year
+                month
+                day
+            }
+            coverImage {
+                extraLarge
+                large
+                medium
+                color
+            }
+            bannerImage
+            nextAiringEpisode {
+                id
+                episode
+                airingAt
+            }
+        }
+    }
+'''
+
 # Search anilist api for anime using slug
 # and returns next airing episode
 # variables: $querystring: String
@@ -245,6 +292,10 @@ querySearchAnime = '''
                     color
                 }
                 bannerImage
+                trailer {
+                    id
+                    site
+                }
                 mediaListEntry {
                     id
                 }

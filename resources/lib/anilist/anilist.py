@@ -3,7 +3,7 @@
 import requests
 import json
 import logging
-from resources.lib.anilist.queries import queryForNextEpisode, queryForWatchingAnime, queryForAnimeInList, querySearchAnime
+from resources.lib.anilist.queries import queryForNextEpisode, queryForWatchingAnime, queryForAnimeInList, querySearchAnime, queryForAnime
 from resources.lib.anilist.mutations import mutationForSaveTextActivity, mutationForUpdatingAnime
 from resources.lib.anilist.models import LatestEpisodeInfo
 from resources.lib.utils.settings import Settings
@@ -28,6 +28,9 @@ def make_request(query, variables, auth=False):
     }, headers=headers)
     resp.encoding = resp.apparent_encoding
     logger.debug("Response status: " + str(resp.status_code))
+    if resp.status_code > 200:
+        logger.debug(resp.text)
+
     return json.loads(resp.text)
 
 def get_latest_episode_info(slug):
@@ -45,12 +48,16 @@ def get_anilist_user_library(userName):
     resp = make_request(queryForWatchingAnime, variables)
     return resp['data']['MediaListCollection']['lists'][0]['entries']
 
-def get_anilist_anime(id):
+def get_anilist_anime(id, in_list):
     variables = {
         'id': id
     }
-    resp = make_request(queryForAnimeInList, variables)
-    return resp['data']['MediaList']
+    if in_list:
+        resp = make_request(queryForAnimeInList, variables)
+        return resp['data']['MediaList']
+    else:
+        resp = make_request(queryForAnime, variables)
+        return resp['data']
 
 def set_text_activity(text):
     variables = {
@@ -68,6 +75,7 @@ def update_anime(id, newProgress):
     resp = make_request(mutationForUpdatingAnime, variables, auth=True)
     return resp
 
+# TODO: Pagination on results
 def search_anime(query, auth=False):
     variables = {
         'query': query

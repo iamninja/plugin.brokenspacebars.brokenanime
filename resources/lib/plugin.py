@@ -83,10 +83,10 @@ def anilist_user_library():
         is_folder = True
         if (anime.episodeCount != None) and (anime.episodeCount < 80):
             addDirectoryItem(plugin.handle, plugin.url_for(
-                show_episodes_anilist, id = anime.id, latest_episode = anime.episodeCount, offset = 1), list_item, is_folder)
+                show_episodes_anilist, in_list=1, id=anime.id, latest_episode=anime.episodeCount, offset=1), list_item, is_folder)
         else:
             addDirectoryItem(plugin.handle, plugin.url_for(
-                show_grouped_episodes_anilist, id = anime.id, latest_episode = anime.nextEpisode), list_item, is_folder)
+                show_grouped_episodes_anilist, in_list=1, id=anime.id, latest_episode=anime.nextEpisode), list_item, is_folder)
     endOfDirectory(plugin.handle)
 
 @plugin.route('/search')
@@ -96,14 +96,26 @@ def search():
     dialog = Dialog()
     query = dialog.input("Enter search query")
     logger.debug("Search for: " + str(query))
-    search_result = search_anime(query, False)
-    logger.debug(search_result)
-    # create_anime_list(search_result)
+    search_result = search_anime(query, True)
+    animeResults = AnimeResults(search_result['data']['Page'])
+    for anime in animeResults.list:
+        list_item = ListItem(label=anime.title['userPreferred'])
+        list_item.setInfo('video', anime.getAnimeInfo())
+        list_item.setArt(anime.getAnimeArt)
+        is_folder = True
+        if anime.mediaListEntryId != None:
+            in_list = 1
+        addDirectoryItem(plugin.handle, plugin.url_for(
+            show_episodes_anilist,
+            in_list=in_list,
+            id=anime.mediaListEntryId if in_list else anime.id,
+            latest_episode=-1, offset=1), list_item, is_folder)
+    endOfDirectory(plugin.handle)
 
 # TODO: Needs refacotring
-@plugin.route('/anime/anilist/<id>/episodes/latest-<latest_episode>/offset-<offset>')
-def show_episodes_anilist(id, latest_episode = -1, offset = 1):
-    anime = Anime(get_anilist_anime(id), "anilist")
+@plugin.route('/anime/anilist/<in_list>/<id>/episodes/latest-<latest_episode>/offset-<offset>')
+def show_episodes_anilist(in_list, id, latest_episode = -1, offset = 1):
+    anime = Anime(get_anilist_anime(id, in_list), "anilist")
     # logger.debug(anime)
     anime.slug = get_slug(anime.titles['romaji'].encode('utf-8'))
     # logger.debug(anime.slug)
@@ -147,9 +159,9 @@ def show_episodes_anilist(id, latest_episode = -1, offset = 1):
     storage['current'] = current
     endOfDirectory(plugin.handle)
 
-@plugin.route('/anime/anilist/<id>/<latest_episode>/episodes-grouped')
-def show_grouped_episodes_anilist(id, latest_episode):
-    anime = Anime(get_anilist_anime(id), service = "anilist")
+@plugin.route('/anime/anilist/<in_list>/<id>/<latest_episode>/episodes-grouped')
+def show_grouped_episodes_anilist(id, latest_episode, in_list):
+    anime = Anime(get_anilist_anime(id, in_list), service = "anilist")
     if anime.nextEpisode != -1:
         latest_episode = anime.nextEpisode
     else:
