@@ -1,0 +1,1 @@
+tail -F ~/.kodi/temp/kodi.log | awk '/\[plugin.brokenspacebars.brokenanime\]/ {print $0}'
