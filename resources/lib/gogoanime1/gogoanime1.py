@@ -5,7 +5,7 @@ import requests
 import time
 import random
 import logging
-from urllib import quote
+# from urllib3 import quote
 
 from bs4 import BeautifulSoup
 import xbmcaddon

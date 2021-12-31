@@ -5,7 +5,7 @@ import json
 import logging
 
 import xbmcaddon
-from xbmc import translatePath
+from xbmcvfs import translatePath
 
 from resources.lib.utils import kodilogging
 
@@ -17,7 +17,7 @@ class Settings():
 
     def __init__(self):
         self.__addon = xbmcaddon.Addon()
-        self.__profile = translatePath(self.__addon.getAddonInfo('profile')).decode('utf-8')
+        self.__profile = translatePath(self.__addon.getAddonInfo('profile'))
         if self.settings_file_exists():
             self.load_settings()
         else:

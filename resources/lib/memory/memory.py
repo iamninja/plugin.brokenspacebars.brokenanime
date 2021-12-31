@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 
 import pickle
-from future.utils import iteritems
-from collections import MutableMapping
+# from future.utils import iteritems
+from collections.abc import MutableMapping
 
 import xbmcgui
 
@@ -19,7 +19,7 @@ class MemoryStorage(MutableMapping):
 
     def _format_contents(self):
         lines = []
-        for key, val in iteritems(self):
+        for key, val in map(self):
             lines.append('{0}: {1}'.format(repr(key), repr(val)))
         return ', '.join(lines)
 

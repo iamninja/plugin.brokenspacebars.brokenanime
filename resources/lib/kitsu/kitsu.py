@@ -73,8 +73,9 @@ def check_token():
 
 # Needs to get smarter...
 def get_slug(romaji_title):
-    resp = requests.get(baseURL + 'anime?filter[text]=' + romaji_title)
+    resp = requests.get(baseURL + "anime?filter[text]=" + romaji_title)
     data = json.loads(resp.text)
+    logger.debug(data)
     # for result in data['data']:
     #     logger.debug(result['attributes']['titles']['en_jp'])
     #     logger.debug(romaji_title)
@@ -97,7 +98,7 @@ def get_trending_anime():
     return trending_anime
 
 def get_popular_anime():
-    resp = requests.get(baseURL + 'anime?sort=ratingRank&page[limit]=20&page[offset]=0')
+    resp = requests.get(baseURL + "anime?sort=ratingRank&page[limit]=20&page[offset]=0")
     data = json.loads(resp.text)
     popular_anime = []
     for anime in data['data']:

@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 from __future__ import unicode_literals
 import logging
 
@@ -14,9 +12,8 @@ class KodiLogHandler(logging.StreamHandler):
     def __init__(self):
         logging.StreamHandler.__init__(self)
         addon_id = xbmcaddon.Addon().getAddonInfo('id')
-        prefix = b"[%s] " % addon_id
-        # formatter = logging.Formatter(prefix + b'%(name)s: %(message)s')
-        formatter = logging.Formatter(prefix + b'%(message)s')
+        prefix = "[%s] " % addon_id
+        formatter = logging.Formatter(prefix + '%(name)s: %(message)s')
         self.setFormatter(formatter)
 
     def emit(self, record):
@@ -29,11 +26,8 @@ class KodiLogHandler(logging.StreamHandler):
             logging.NOTSET: xbmc.LOGNONE,
         }
         if get_setting_as_bool('is_debug'):
-            try:
-                xbmc.log(self.format(record), levels[record.levelno])
-            except UnicodeEncodeError:
-                xbmc.log(self.format(record).encode(
-                    'utf-8', 'ignore'), levels[record.levelno])
+            xbmc.log(self.format(record), levels[record.levelno])
+
 
     def flush(self):
         pass
